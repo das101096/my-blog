@@ -4,25 +4,436 @@ title:  "Integrating razorpay into your webapp"
 date:   2019-03-23 21:03:36 +0530
 categories: Javascript NodeJS
 ---
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
 
-```javascript
-const Razorpay = require('razorpay');
+# 첫번째 블로그 글.
 
-let rzp = Razorpay({
-	key_id: 'KEY_ID',
-	secret: 'name'
-});
+---
 
-// capture request
-rzp.capture(payment_id, cost)
-	.then(function (data) {
-		return 2;
-	})
+T아카데미 - JPA 프로그래밍 기초 정리 글
+지금까지 들었던 강의는 여러개지만 정리를 안했고 ㅠ
+어디에 정리해야 될 것 같아서 깃헙 블로그를 새로 만들고 정리할 예정이다 ^-^
+
+인프런에서 유용하게 들었던 김영한님의 강의임.
+말을 너무 재미있게 하고 엄청 멋있는 분 같다.
+
+---
+
+## [1강] JPA 소개는 거의 다 들어서 정리를 못할 것 같고,
+
+## [2강] JPA 기초
+
+#### - **persistence.xml**
+  1. jpa 설정파일
+  2. 위치 : /META-INF/persistence.xml
+      -> 데이터베이스 접속정보 및 옵션이 포함되어 있음
+
+#### - **데이터베이스 방언 (dialect)**
+    1. jpa는 특정 데이터베이스에 종속적이지 않다.
+    2. 방언 : SQL 표준을 지키지 않거나 특정 데이터베이스만의 고유한 기능
+
+#### - **애플리케이션 개발**
+
+##### 1. 엔티티 매니저 팩토리 설정
+
+1. 트랜잭션 = 엔티티 매니저
+2. 엔티티 매니저 팩토리 생성
+```c
+  EntityManagerFactory emf = Persistence.createEntityManagerFactory("Hello");
+```
+   create ~ 이하 함수 안에 변수는 persistence.xml 에 있는
+   persistence-unit name="hello" 참고
+   끝낼때는 emf.close();
+
+##### 2. 엔티티 매니저 설정
+
+* 엔티티 매니저
+
+```c
+    EntityManager em = emf.createEntityManager();
+    EntityTransactio
 ```
 
-Check out the [Jekyll docs][jekyll-docs] for more info on how to get the most out of Jekyll. File all bugs/feature requests at [Jekyll’s GitHub repo][jekyll-gh]. If you have questions, you can ask them on [Jekyll Talk][jekyll-talk].
+* 객체 생성
 
-[jekyll-docs]: https://jekyllrb.com/docs/home
-[jekyll-gh]:   https://github.com/jekyll/jekyll
-[jekyll-talk]: https://talk.jekyllrb.com/
+  ```c
+     Member member = new Member();
+     member.setId(100L);
+     member.setName("다슬");
+  ```
+
+* Persistence
+
+  ```c
+     em.persistence(member);
+     tx.commit();
+     em.close();
+  ```
+
+##### 3. 트랜잭션
+
+##### 4. 비즈니스 로직 (CURD)
+
+#### - **주의사항**
+  - 엔티티 매니저 팩토리는 1개만 생성하여 애플리케이션 전체 공유
+  - 엔티티 매니저는 쓰레드간 공유 X 사용하고 버리기
+  - JPA 의 모든 데이터 변경은 트랜잭션 안에서 실행해야 한다.
+
+## [3강] 필드와 컬럼 매핑
+
+#### - **데이터베이스 스키마 자동 생성**
+  - 애플리케이션 실행 시점에 자동 생성됨
+  - 방언을 사용하여 데이터베이스에 맞는 적절한 DDL 생성
+  - 개발 장비에서만 사용!
+  - hibernate.hbm2ddl.auto
+    1. create : 기존 테이블 삭제 후 재생성
+    2. create-drop : create와 같으나 종료시점에 테이블 drop
+    3. update : 변경분만 반영 (운영DB 사용 X)
+    4. validate : 엔티티와 테이블이 정상 매핑되어있는지만확인
+    5. none : 사용하지 않음
+       - 개발 초기   : create, update
+       - 테스트 서버 : update, validate
+       - 운영 서버   : validate, none
+
+#### - **매핑 어노테이션**
+  1. @Column - 디비 기준 컬럼명
+        ```c
+        @Column(name = "USERNAME")
+        private String name;
+        ```
+      - 옵션
+          - insertable , updatable false 시 값이 들어가지 않음
+          - nullable fasle 시 not null 제약조건 들어감
+          - unique 유니크 제약조건
+
+  2. @Temporal - 날짜타입 매핑
+        ```c
+        @Temporal(TemporalType.DATE)
+        private Date date;
+        ```
+
+  3. @Enumerated(EnumType.STRING)
+
+  4. @Lob
+      - 데이터가 너무 길 경우 바이너리로 변환
+      - CLOB - String, BLOB - Byte
+
+  5. @Transient
+      - 디비와 매핑하지 않고 객체만 가지고 있음
+
+#### - **식별자 매핑**
+
+  - @Id (직접매핑)
+
+    1. @Id @GeneratedValue(strategy = GenerationType.AUTO)
+       - Mysql AutoIncrement 기능과 같음
+
+    2. @Id @GeneratedValue(strategy = GenerationType.SEQUENCE)
+       - 데이터베이스 시퀀스 오브젝트 사용 ORACLE
+       - @SequenceGenerator 필요
+
+    3. @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+       - DB에게 위임
+
+    4. @Id @GeneratedValue(strategy = GenerationType.TABLE)
+       - 키 생성용 테이블 사용, 모든 디비에서 사용 가능
+       - @TableGenerator 사용
+
+    5. @Id @GeneratedValue(strategy = GenerationType.AUTO)
+       - 방언에 따라 자동지정 , Default 값
+
+#### - **권장하는 식별자 전략**
+  - Long + 대체키 + 키 생성전략 사용
+
+## [4강] 연관관계 매핑
+
+#### -  **객체를 테이블에 맞추어 데이터 중심으로 모델링할 경우, 협력관계를 만들 수 없다.**
+  1. 테이블은 외래 키로 조인을 사용해서 연관된 테이블을 찾는다.
+  2. 객체는 참조를 사용해서 연관된 객체를 찾는다.
+  3. 테이블과 객체사이의 차이점
+
+#### - **연관관계 매핑 이론**
+  1. 단방향 매핑
+      ```c
+      @ManyToOne
+      @JoinColumn(name = "TEAM_ID")
+      private Team team;
+      ```
+
+      ```c
+      @ManyToOne(fetch = FetchType.Lazy)
+      ```
+      지연로딩, 해당객체를 직접 컨택할 경우에만 Select 해온다.
+
+  2. 양방향 매핑
+     ```c
+     @OneToMany(mappedBy = "team")
+     List<Member> members = new ArrayList<Member>();
+     ```
+
+## [5강] 양방향 매핑
+#### - **연관관계 매핑 이론**    
+
+#### - **객체와 테이블의 관계를 맺는 차이**
+  1. 객체
+    - 회원 -> 팀 연관관계
+    - 팀 -> 회원 연관관계
+
+  2. 테이블 연관관계
+    - 회원 <-> 팀 연관관계
+
+  * 객체의 양방향 관계는 실제로 양방향 관계가 아닌 단방향 2개이다.
+  * 테이블은 외래 키 하나로 양방향 관계를 만들수 있다. (조인 가능)
+
+  @import "./image/1.GIF"
+
+  * member, team 간의 연관성을 만들기 위해서는 두 클래스 중 한 클래스에서 외래키를 관리해야 한다.
+
+#### - **연관관계의 주인**
+* 연관관계의 주인만 외래 키를 관리 (등록 ,수정)
+* 주인이 아닌 쪽은 읽기만 가능
+* 주인은 mappedBy 속성을 사용할 수 없음
+* 주인이 아니면 mappedBy 속성으로 주인 지정
+* 외래키가 있는곳으로 주인을 정하기
+
+@import "./image/2.GIF"
+@import "./image/3.GIF"
+
+* 순수한 객체 관계를 고려하면 항상 양쪽 다 값을 입력해야 한다.
+
+#### - **양방향 매핑의 장점**
+* 단방향 만으로도 이미 연관관계 매핑은 완료됨
+* 양방향 매핑은 반대방향으로 조회하는 기능이 추가된것 뿐임
+* JPQL에서 쓸일이 많음
+
+#### - **연관관계 매핑 어노테이션**
+1. 다대일 (@ManyToOne)
+2. 일대다 (@OneToMany)
+3. 일대일 (@OneToOne)
+4. 다대다 (@ManyToMany)
+5. @JoinColumn, @JoinTable
+
+#### - **상속관계 매핑 어노테이션**
+1. @inheritance
+2. @DiscriminatorColumn
+3. @DiscriminatorValue
+4. @MappedSuperclass (매핑 속성만 상속)
+
+#### - **복합 키 어노테이션**
+1. @IdClass
+2. @Embeddedid
+3. @Embeddable
+4. @Mapsld
+
+
+## [6강] JPA 내부구조
+#### - **영속성 컨텍스트**
+
+@import "./image/4.GIF"
+
+1. 엔티티를 영구 저장하는 환경 이라는 뜻
+2. EntityManager.persist(entity);
+3. 영속성 컨텍스트는 논리적인 개념이며 눈에 보이지 않는다.
+4. 엔티티 매니저를 통해 접근한다.
+
+#### - **엔티티의 생명주기**
+```c
+Member member - new Member();
+member.setId("mem1");
+member.setUsername("회원1");
+
+EntityManager em = emf.createEntityManager();
+em.getTransaction().begin();
+
+em.persist(member);
+```
+- 비영속 / 영속 / 준영속 / 삭제 4가지로 나뉨
+
+#### - **영속성 컨텍스트의 이점**
+**1. 1차캐시**
+
+@import "./image/5.GIF"
+
+ - 조회 시, 디비를 뒤지는게 아닌 1차캐시를 먼저 찾아봄
+ - 트랜잭션 시작 ~ 끝날때까지 살아 있음
+
+ @import "./image/6.GIF"
+
+ - 트랜잭션 격리 수준 REPEATABLE READ 등급을 제공
+
+**2. 동일성 보장**
+**3. 트랜잭션을 지원하는 쓰기지연**
+```c
+em.persist(memberA);
+em.persist(memberB);
+```
+  - 해당 구문 실행 시, 쿼리가 2번 날아가지 않고
+    transaction commit 시 한방에 날아감
+
+@import "./image/7.GIF"    
+
+**4. 변경 감지 (Dirty Checking)**
+```c
+memberA.setUsername("hi");
+memberA.setUsername("hi2");
+```
+- 해당 구문을 2번 날리면 자동 변경감지하여 update 쿼리로 나감
+- 1차캐시 생성 시, 스냅샷을 남겨놓고 비교
+
+#### - **플러시**
+1. 변경감지 일어남 = 스냅샷 비교
+2. 영속성 컨텍스트의 변경내용을 DB에 반영
+3. 플러시 방법
+```c
+em.flush()
+transaction.commit()
+JPQL 쿼리 실행
+```
+4. 영속성 컨텍스트를 비우는 것이 아닌 변경내용을 db에 동기화한다.
+
+#### - **준영속상태**
+1. em.detach(entity)
+2. em.clear()
+3. em.close()
+4. 준영속상태 시, 지연로딩 사용 불가
+
+#### - **지연로딩 vs 즉시로딩**
+1. 지연로딩 (LAZY)
+연관관계로 맺혀져 있는 객체 조회 시,
+LAZY 로 선언한 클래스는 실제 그 객체를 사용하는 시점에 로딩됨.
+
+@import "./image/8.GIF"
+
+2. 즉시로딩 (EAGER)
+해당 객체를 사용하지 않아도 바로 로딩
+
+## [7강] JPA 객체지향쿼리
+#### - **jpa는 다양한 쿼리 방법을 지원**
+1. JPQL
+2. JPA Criteria
+3. QueryDSL
+4. 네이티브 Mysql
+5. JDBC API, Mybatis, SpringjdbcTemplate
+
+#### - **JPQL**
+1. 가장 단순
+2. EntityManager.find()
+3. a.getB().getC()
+4. 검색 할 때 도 테이블이 아닌 엔티티 객체를 대상으로 검색함
+5. 모든 DB 데이터를 객체로 변환해서 검색하는 것은 불가능함
+6. 애플리케이션이 필요한 데이터만 DB에서 불러오려면 검색조건 필요
+7. SQL을 추상화한 JPQL 이라는 객체 지향 쿼리 언어를 제공함
+8. jpql - 엔티티 대상, sql - 테이블 대상
+
+@import "./image/9.PNG"
+
+```c
+select
+  m.id as id,
+  m.age as age,
+  m.USERNAME as USERNAME,
+  m.TEAM_ID as TEAM_ID
+from
+  Member m
+where
+  m.age > 18
+```
+
+9. from 절에 들어가는 것이 객체
+10. 엔티티와 속성은 대소문자 구분
+11. JPQL 키워드는 대소문자 구분 안함 (SELECT)
+12. 별칭은 필수 (m)
+
+@import "./image/10.PNG"
+
+#### - **프로젝션**
+1. Select 절에 적는 것
+
+@import "./image/11.PNG"
+
+#### - **페이징 API**
+1. 두가지 api로 추상화
+2. setFirstResult(int startPosition) : 조회 시작 위치 , 0부터 시작
+3. setMaxResults(int maxResult) : 조회할 데이터 수
+
+@import "./image/12.PNG"
+
+4. 디비 별 방언으로 알아서 치환됨, limit, rownum .. 등
+
+#### - **조인**
+
+@import "./image/13.PNG"
+
+* 세타조인 - 맞조인
+
+#### - **★★페치조인**
+
+1. 엔티티 객체 그래프를 한번에 조회함
+2. 별칭을 사용할 수 없다.
+3. JPQL
+  ```c
+  select m from Member m join fetch m.team
+  ```
+4. SQL
+  ```c
+  SELECT M.*, T.*
+  FROM MEMBER T
+  INNER JOIN TEAM T ON M.TEAM_ID=T.ID
+  ```
+5. 페치조인은 EAGER 로딩과 비슷하다.
+
+#### - **JPQL 기본함수**
+1. CONCAT
+2. SUBSTRING
+3. TRIM
+4. LOWER, UPPER
+5. LENGTH
+6. LOCATE
+7. ABS, SQRT, MOD
+8. SIZE, INDEX
+9. EXIST, IN
+10. BETWEEN, LIKE, IS null
+11. CASE 문
+
+@import "./image/14.PNG"
+
+12. 사용자 정의 함수 호출 FUNCTION
+13. **Named 쿼리 - 정적쿼리 (어플리케이션 로딩시점에 오류남 ★★ 에러 잡기 쉬움)**
+
+@import "./image/15.PNG"
+
+## [8강] Spring Data JPA와 QueryDSL 이해
+#### - **스프링 데이터 jpa**
+1. 지루하게 반복되는 CRUD 문제를 해결
+2. 개발자는 인터페이스만 작성함
+3. 스프링 데이터 jpa가 구현 객체를 동적으로 생성해서 주입
+4. 공통화 할 수 있는 건 모두 상속처리!
+5. 메서드 이름만으로 JPQL 쿼리를 생성해줌
+
+@import "./image/16.PNG"
+
+@import "./image/17.PNG"
+
+@import "./image/18.PNG"
+
+6. @Query, JPQL 정의
+
+  @Query("select m from Member m where m.username = ?1");
+  Member findByUsername(String username, Pageable pageable);
+
+@import "./image/19.PNG"
+
+#### - **QueryDSL 소개**
+1. SQL, JPQL 을 쿼리로 작성할 수 있도록 도와주는 api
+2. SQL, JPQL은 해당 로직 실행 전까지 작동여부 확인이 불가능하다.
+3. 컴파일 시점에 문법 오류 발견 ★★
+4. 코드 자동완성 (IDE 도움)
+
+@import "./image/20.PNG"
+
+5. 동적 쿼리 생성
+
+@import "./image/21.PNG"
+-> BooleanBuilder 에 조건절을 추가
+
+6. 제약조건 조립 가능 - 가독성, 재사용
+
