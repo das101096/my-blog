@@ -2,7 +2,7 @@
 layout: post
 title:  "daseul"
 date:   2019-03-23 21:03:36 +0530
-categories: Javascript NodeJS
+categories: 
 ---
 
 # 첫번째 블로그 글.
