@@ -13,21 +13,21 @@ T아카데미 - Git & GitHub Page
 ## [1강] Git 기초
 
 #### - **Git이 필요한 이유**
-  1. Git이 추적하는 파일은 총 3가지로 구분 됨
-  
+1. Git이 추적하는 파일은 총 3가지로 구분 됨
+
     * Unmodified : 이전 버전과 비교하여 수정된 부분이 없는 상태
 
     * Modified   : 이전 버전과 비교하여 수정된 부분이 있는 상태
 
     * Staged     : 커밋을 위해 준비된 상태 ( 스테이징 )
 
-  2. 스테이징이 필요한 이유
+2. 스테이징이 필요한 이유
 
     * 여러작업 중 일부만 커밋해야 할 경우
 
     * 커밋 전 상태를 수정 또는 체크할 때
 
-  3. 커밋 후 40자리의 hash 값을 만들어 키 값으로 사용
+3. 커밋 후 40자리의 hash 값을 만들어 키 값으로 사용
 
 ## [2강] GitHub 실습 I - Init, Add, Commit, Push, Diff, Status, Log
 
@@ -51,55 +51,75 @@ T아카데미 - Git & GitHub Page
 #### - **git init**
 - 초기화
 - .git 폴더 생성
+
 #### - **git add**
 - stage로 올림, 폴더나 전체도 가능함
 - git add . 현재 폴더의 수정사항 모두 stage로 올림
+
 #### - **git status, git diff**
 - 현재 어떤 파일을 수정 / 스테이징 했는지
 - 어느파일이 얼마나 바뀐지
+
 #### - **git commit -m "add README.md"**
 - 간단한 설명과 함께 commit
+
 #### - **git log**
 - 이전 commit 기록 살펴보기
 - --all 전체 로그 조회
 - git log --all --decorate --graph --oneline
+
 #### - **git remote add origin [url]**
 - 원격 저장소와 연결
 - origin 이라는 이름으로 [url]과 연결
+
 #### - **git push origin master**
 - 원격 저장소 master branch에 업데이트
+
 #### - **git checkout 키값7자리**
 - 해당 키값의 버전으로 돌아감
 
 ## [3강] GitHub 실습 II - Pull, Fetch, Reset, Revert, Stash, Fork, Push
+
 #### - **git remote -v**
 - 원격 저장소 버전 체크
+
 #### - **git clone [url]**
 - 원격 저장소에서 다운로드
+
 #### - **git branch [name]**
 - master 는 최종 배포용이기 때문에 branch를 만들어 개발
 - [name] branch 만들기
+
 #### - **git checkout [name]**
 - [name] branch로 이동하기
+
 #### - **git merge [name]**
 - [name] branch를 현재 branch로 합친다.
+
 #### - **git rebase master**
 - base master로 re-base 한다.
+
 #### - **git branch -d [name]**
 - 완료된 branch 삭제
+
 #### - **git fetch**
 - 원격 저장소와 동기화
+
 #### - **git pull**
 - 원격 저장소와 동기화하고 merge
+
 #### - **git reset [option] [branch]**
 - branch 이후 기록을 없앰
 - 비추
 - 이미 원격저장소에 올라간 이후에는 사용할 수 없음
+
 #### - **git revert [branch]**
 - 커밋을 지운 기록까지 남기기
+
 #### - **git stash**
 - 현재 작업하고 있는 작업물을 따로 저장하기
 - commit은 안함
+
 #### - **원격 저장소 fork**
 - 사이트에서 가능
 - 원 리파지토리의 수정권한은 없음
