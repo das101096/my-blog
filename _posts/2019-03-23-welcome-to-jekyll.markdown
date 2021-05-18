@@ -428,11 +428,12 @@ where
 3. 컴파일 시점에 문법 오류 발견 ★★
 4. 코드 자동완성 (IDE 도움)
 
-@import "./image/20.PNG"
+@import "image/20.PNG"
 
 5. 동적 쿼리 생성
 
 @import "image/21.PNG"
+
 -> BooleanBuilder 에 조건절을 추가
 
 6. 제약조건 조립 가능 - 가독성, 재사용
