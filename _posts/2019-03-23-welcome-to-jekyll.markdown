@@ -1,7 +1,7 @@
 ---
 layout: post
-title:  "daseul"
-date:   2019-03-23 21:03:36 +0530
+title:  "T아카데미 - JPA 프로그래밍 기초 정리"
+date:   2021-05-18 21:03:36 +0530
 categories:
 ---
 
