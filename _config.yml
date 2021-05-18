@@ -15,7 +15,7 @@ sass:
   sass_dir: _sass
 defaults:
   - scope:
-      path: "_posts/image"
+      path: "/_posts/image"
     values:
       image: true
 plainwhite:

@@ -429,6 +429,7 @@ where
 
 5. 동적 쿼리 생성
 
+<img data-action="zoom" src='{{ "/_posts/image/21.PNG" | relative_url }}' alt='absolute'>
 @import "21.PNG";
 
 -> BooleanBuilder 에 조건절을 추가
