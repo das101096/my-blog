@@ -181,7 +181,7 @@ T아카데미 - JPA 프로그래밍 기초 정리 글
   * 객체의 양방향 관계는 실제로 양방향 관계가 아닌 단방향 2개이다.
   * 테이블은 외래 키 하나로 양방향 관계를 만들수 있다. (조인 가능)
 
-  @import "./image/1.GIF"
+   <img data-action="zoom" src='{{ "/image/1.GIF" | relative_url }}' alt='absolute'>
 
   * member, team 간의 연관성을 만들기 위해서는 두 클래스 중 한 클래스에서 외래키를 관리해야 한다.
 
@@ -192,8 +192,8 @@ T아카데미 - JPA 프로그래밍 기초 정리 글
 * 주인이 아니면 mappedBy 속성으로 주인 지정
 * 외래키가 있는곳으로 주인을 정하기
 
-@import "./image/2.GIF"
-@import "./image/3.GIF"
+<img data-action="zoom" src='{{ "/image/2.GIF" | relative_url }}' alt='absolute'>
+<img data-action="zoom" src='{{ "/image/3.GIF" | relative_url }}' alt='absolute'>
 
 * 순수한 객체 관계를 고려하면 항상 양쪽 다 값을 입력해야 한다.
 
@@ -225,7 +225,7 @@ T아카데미 - JPA 프로그래밍 기초 정리 글
 ## [6강] JPA 내부구조
 #### - **영속성 컨텍스트**
 
-@import "./image/4.GIF"
+<img data-action="zoom" src='{{ "/image/4.GIF" | relative_url }}' alt='absolute'>
 
 1. 엔티티를 영구 저장하는 환경 이라는 뜻
 2. EntityManager.persist(entity);
@@ -248,12 +248,12 @@ em.persist(member);
 #### - **영속성 컨텍스트의 이점**
 **1. 1차캐시**
 
-@import "./image/5.GIF"
+ <img data-action="zoom" src='{{ "/image/5.GIF" | relative_url }}' alt='absolute'>
 
  - 조회 시, 디비를 뒤지는게 아닌 1차캐시를 먼저 찾아봄
  - 트랜잭션 시작 ~ 끝날때까지 살아 있음
 
- @import "./image/6.GIF"
+ <img data-action="zoom" src='{{ "/image/6.GIF" | relative_url }}' alt='absolute'>
 
  - 트랜잭션 격리 수준 REPEATABLE READ 등급을 제공
 
@@ -266,7 +266,7 @@ em.persist(memberB);
   - 해당 구문 실행 시, 쿼리가 2번 날아가지 않고
     transaction commit 시 한방에 날아감
 
-@import "./image/7.GIF"    
+  <img data-action="zoom" src='{{ "/image/7.GIF" | relative_url }}' alt='absolute'>  
 
 **4. 변경 감지 (Dirty Checking)**
 ```c
@@ -298,7 +298,7 @@ JPQL 쿼리 실행
 연관관계로 맺혀져 있는 객체 조회 시,
 LAZY 로 선언한 클래스는 실제 그 객체를 사용하는 시점에 로딩됨.
 
-@import "./image/8.GIF"
+<img data-action="zoom" src='{{ "/image/8.GIF" | relative_url }}' alt='absolute'>
 
 2. 즉시로딩 (EAGER)
 해당 객체를 사용하지 않아도 바로 로딩
@@ -321,7 +321,7 @@ LAZY 로 선언한 클래스는 실제 그 객체를 사용하는 시점에 로�
 7. SQL을 추상화한 JPQL 이라는 객체 지향 쿼리 언어를 제공함
 8. jpql - 엔티티 대상, sql - 테이블 대상
 
-@import "./image/9.PNG"
+<img data-action="zoom" src='{{ "/image/9.PNG" | relative_url }}' alt='absolute'>
 
 ```c
 select
@@ -340,25 +340,25 @@ where
 11. JPQL 키워드는 대소문자 구분 안함 (SELECT)
 12. 별칭은 필수 (m)
 
-@import "./image/10.PNG"
+<img data-action="zoom" src='{{ "/image/10.PNG" | relative_url }}' alt='absolute'>
 
 #### - **프로젝션**
 1. Select 절에 적는 것
 
-@import "./image/11.PNG"
+<img data-action="zoom" src='{{ "/image/11.PNG" | relative_url }}' alt='absolute'>
 
 #### - **페이징 API**
 1. 두가지 api로 추상화
 2. setFirstResult(int startPosition) : 조회 시작 위치 , 0부터 시작
 3. setMaxResults(int maxResult) : 조회할 데이터 수
 
-@import "./image/12.PNG"
+<img data-action="zoom" src='{{ "/image/12.PNG" | relative_url }}' alt='absolute'>
 
 4. 디비 별 방언으로 알아서 치환됨, limit, rownum .. 등
 
 #### - **조인**
 
-@import "./image/13.PNG"
+<img data-action="zoom" src='{{ "/image/13.PNG" | relative_url }}' alt='absolute'>
 
 * 세타조인 - 맞조인
 
@@ -391,12 +391,12 @@ where
 10. BETWEEN, LIKE, IS null
 11. CASE 문
 
-@import "./image/14.PNG"
+<img data-action="zoom" src='{{ "/image/14.PNG" | relative_url }}' alt='absolute'>
 
 12. 사용자 정의 함수 호출 FUNCTION
 13. **Named 쿼리 - 정적쿼리 (어플리케이션 로딩시점에 오류남 ★★ 에러 잡기 쉬움)**
 
-@import "./image/15.PNG"
+<img data-action="zoom" src='{{ "/image/15.PNG" | relative_url }}' alt='absolute'>
 
 ## [8강] Spring Data JPA와 QueryDSL 이해
 #### - **스프링 데이터 jpa**
@@ -406,18 +406,18 @@ where
 4. 공통화 할 수 있는 건 모두 상속처리!
 5. 메서드 이름만으로 JPQL 쿼리를 생성해줌
 
-@import "./image/16.PNG"
+<img data-action="zoom" src='{{ "/image/16.PNG" | relative_url }}' alt='absolute'>
 
-@import "./image/17.PNG"
+<img data-action="zoom" src='{{ "/image/17.PNG" | relative_url }}' alt='absolute'>
 
-@import "./image/18.PNG"
+<img data-action="zoom" src='{{ "/image/18.PNG" | relative_url }}' alt='absolute'>
 
 6. @Query, JPQL 정의
 
   @Query("select m from Member m where m.username = ?1");
   Member findByUsername(String username, Pageable pageable);
 
-@import "./image/19.PNG"
+<img data-action="zoom" src='{{ "/image/19.PNG" | relative_url }}' alt='absolute'>
 
 #### - **QueryDSL 소개**
 1. SQL, JPQL 을 쿼리로 작성할 수 있도록 도와주는 api
@@ -425,13 +425,11 @@ where
 3. 컴파일 시점에 문법 오류 발견 ★★
 4. 코드 자동완성 (IDE 도움)
 
-@import "20.PNG";
+<img data-action="zoom" src='{{ "/image/20.PNG" | relative_url }}' alt='absolute'>
 
 5. 동적 쿼리 생성
 
 <img data-action="zoom" src='{{ "/image/21.PNG" | relative_url }}' alt='absolute'>
-@import "/image/21.PNG";
-
 -> BooleanBuilder 에 조건절을 추가
 
 6. 제약조건 조립 가능 - 가독성, 재사용
