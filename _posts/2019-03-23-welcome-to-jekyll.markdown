@@ -2,7 +2,7 @@
 layout: post
 title:  "daseul"
 date:   2019-03-23 21:03:36 +0530
-categories: 
+categories:
 ---
 
 # 첫번째 블로그 글.
@@ -432,8 +432,7 @@ where
 
 5. 동적 쿼리 생성
 
-@import "./image/21.PNG"
+@import "image/21.PNG"
 -> BooleanBuilder 에 조건절을 추가
 
 6. 제약조건 조립 가능 - 가독성, 재사용
-
