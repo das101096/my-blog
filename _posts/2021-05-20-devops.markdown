@@ -60,3 +60,23 @@ T아카데미 - 다양한 DevOps ToolChain의 활용방법
     - zendesk
 
 <img data-action="zoom" src='{{ "/image/25.PNG" | relative_url }}' alt='absolute'>
+
+## [4강] (실습) 애플리케이션 배포자동화 구현
+
+1. Google Cloud - VM 인스턴스 생성
+<img data-action="zoom" src='{{ "/image/26.PNG" | relative_url }}' alt='absolute'>
+
+2. Google Cloud - 방화벽 설정
+<img data-action="zoom" src='{{ "/image/27.PNG" | relative_url }}' alt='absolute'>
+
+3. 서버 SSH 접속 후 Jenkins 설치
+<img data-action="zoom" src='{{ "/image/28.PNG" | relative_url }}' alt='absolute'>
+
+4. jenkins 실행 후 , 서버 외부 ip:8080 으로 접속
+<img data-action="zoom" src='{{ "/image/29.PNG" | relative_url }}' alt='absolute'>
+
+5. Rails app 설치
+<img data-action="zoom" src='{{ "/image/30.PNG" | relative_url }}' alt='absolute'>
+
+6. Github push
+<img data-action="zoom" src='{{ "/image/31.PNG" | relative_url }}' alt='absolute'>
