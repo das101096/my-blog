@@ -413,9 +413,10 @@ where
 <img data-action="zoom" src='{{ "/image/18.PNG" | relative_url }}' alt='absolute'>
 
 6. @Query, JPQL 정의
-
+```c
   @Query("select m from Member m where m.username = ?1");
   Member findByUsername(String username, Pageable pageable);
+```
 
 <img data-action="zoom" src='{{ "/image/19.PNG" | relative_url }}' alt='absolute'>
 
@@ -430,6 +431,7 @@ where
 5. 동적 쿼리 생성
 
 <img data-action="zoom" src='{{ "/image/21.PNG" | relative_url }}' alt='absolute'>
--> BooleanBuilder 에 조건절을 추가
+
+> BooleanBuilder 에 조건절을 추가
 
 6. 제약조건 조립 가능 - 가독성, 재사용
