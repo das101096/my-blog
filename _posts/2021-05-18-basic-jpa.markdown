@@ -413,10 +413,10 @@ where
 <img data-action="zoom" src='{{ "/image/18.PNG" | relative_url }}' alt='absolute'>
 
 6. @Query, JPQL 정의
-```c
+
   @Query("select m from Member m where m.username = ?1");
   Member findByUsername(String username, Pageable pageable);
-```
+
 
 <img data-action="zoom" src='{{ "/image/19.PNG" | relative_url }}' alt='absolute'>
 
