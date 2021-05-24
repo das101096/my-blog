@@ -417,7 +417,6 @@ where
   @Query("select m from Member m where m.username = ?1");
   Member findByUsername(String username, Pageable pageable);
 
-
 <img data-action="zoom" src='{{ "/image/19.PNG" | relative_url }}' alt='absolute'>
 
 #### - **QueryDSL 소개**
