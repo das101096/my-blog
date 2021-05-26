@@ -13,14 +13,14 @@ T아카데미 - 컨테이너 오케스트레이션 쿠버네티스 살펴보기
 ## [1강] 컨테이너 오케스트레이션
 
 #### - **도커가 등장하기 전 서버 운영**
-  <img data-action="zoom" src='{{ "/image/64.PNG" | relative_url }}' alt='absolute'>
+  <img data-action="zoom" src='{{ "/image/69.PNG" | relative_url }}' alt='absolute'>
 
   1. 자체 서버 운영
       - 서버주문 , 서버 설치, cpu 메모리 하드 조립 네트워크 연결, OS설치, 계정설정, 방화벽 설정
       - 서버를 설정하기 위해 많은 노력과 시간이 필요함
       - 성능이 좋은 걸 미리 구매하고 효율적인 사용을 위해 여러 애플리케이션을 설치
 
-        <img data-action="zoom" src='{{ "/image/65.PNG" | relative_url }}' alt='absolute'>
+        <img data-action="zoom" src='{{ "/image/70.PNG" | relative_url }}' alt='absolute'>
 
       - 단계를 지날 때 마다 명령어를 이용함 ex)  cp, mv, rm
       - ruby 버전을 변경 하게 되면 이후 모든 상태에 영향이 감 (위험)
@@ -43,7 +43,7 @@ T아카데미 - 컨테이너 오케스트레이션 쿠버네티스 살펴보기
       - 새로운 서버를 만들고 기존 서버의 내용을 복사할 수 있음
 
       - immutable 변하지 않는
-            * 서버에 설치된 애플리케이션을 새로운 버전으로 업데이트 하면 mutable
-            * 새로운 버전이 설치된 서버의 상태를 이미지로 만들고 교체하면 immutable
-            * 기존 상태를 고려할 필요 없이 통째로 서버를 교체
-            * 생각보다 어렵고 느리고 특정 회사 제품을 써야 함
+          * 서버에 설치된 애플리케이션을 새로운 버전으로 업데이트 하면 mutable
+          * 새로운 버전이 설치된 서버의 상태를 이미지로 만들고 교체하면 immutable
+          * 기존 상태를 고려할 필요 없이 통째로 서버를 교체
+          * 생각보다 어렵고 느리고 특정 회사 제품을 써야 함
