@@ -88,3 +88,371 @@ T아카데미 - 컨테이너 기반 가상화 플랫폼 ‘도커(Doker)’의 �
 3. 도커 - 경량화된 포터블 앱
 
 ## [2강] 도커 컨테이너 만들기
+#### - **컨테이너 실행하기**
+1. run commend
+```c
+$ docker run [OPTION] IMAGE[:TAG|@DIGEST] [COMMAND] [ARG....]
+```
+  * 옵션
+    1. -d, 백그라운드 모드
+    2. -p, 호스트와 컨테이너의 포트연결, 포워딩
+    3. -v, 호스트와 컨테이너의 디렉토리 연결 , 마운
+    4. -e, 컨테이너 내에서 사용할 환경변수 설정
+    5. --name, 컨테이너 이름 설정
+    6. --rm, 프로세스 종료 시 컨테이너 자동 제거
+    7. -it, 터미널 입력을 위한 옵션
+    8. --network, 네트워크 연결
+
+    * run 명령어 사용 후,
+      이미지가 있는지 확인 하고 없으면 다운로드 (pull), 컨테이너 생성 (create), 시작 (start) 한다.
+
+      <img data-action="zoom" src='{{ "/image/37.PNG" | relative_url }}' alt='absolute'>
+
+
+2. /bin/sh
+```c
+$ docker run --rm -it ubuntu:16.04 /bin/sh
+```  
+
+    * --rm 옵션으로 인해 컨테이너가 종료되면 자동 삭제
+
+      <img data-action="zoom" src='{{ "/image/38.PNG" | relative_url }}' alt='absolute'>
+
+4. Redis
+    - 메모리 기반의 다양한 기능을 가진 스토리지
+    - $ docker run --name=redis -d -p 1234:6379 redis
+    - $ docker run --rm -it mikesplain/telnet docker.for.win.localhost 1234
+
+5. Mysql
+  https://www.google.co.kr/search?q=docker+hub+mysql&oq=docker+hub+mysql#spf=1621848547699
+  환경변수 확인
+    - MYSQL_ALLOW_EMPTY_PASSWORD = YES 루트 패스워드 없이 접속 가능
+    - exec 명령어를 이용하여 mysql 컨테이너로 직접 접속함.
+      <img data-action="zoom" src='{{ "/image/39.PNG" | relative_url }}' alt='absolute'>    
+
+6. WordPress
+      <img data-action="zoom" src='{{ "/image/40.PNG" | relative_url }}' alt='absolute'>
+      <img data-action="zoom" src='{{ "/image/41.PNG" | relative_url }}' alt='absolute'>
+
+#### - **컨테이너 목록 확인하기**
+* ps
+    - 실행중인 컨테이너 목록을 확인하는 명령어
+      $ docker ps
+      docker ps -a 중지된 컨테이너 포함
+
+#### - **컨테이너 중지하기**
+* stop
+    - 실행중인 컨테이너 중지
+      $ docker stop [OPTION] CONTAINER [CONTAINER...]
+
+#### - **컨테이너 제거하기**
+* rm
+    - 종료된 컨테이너를 완전히 제거하는 명령어
+      $ docker rm [OPTION] CONTIANER [COTAINER...]
+
+#### - **컨테이너 로그보기**
+* logs
+    - 컨테이너가 정상동작하는지 확인하는 명령어
+      $ docker logs [OPTION] Container
+      -f 옵션 , 새로 생성되는 로그 확인
+      --tail 옵션
+
+#### - **이미지 목록 확인하기**
+* images
+    - 다운로드 받은 이미지 확인
+      $ docker images
+
+#### - **이미지 다운로드**
+* Pull
+    - 이미지를 다운로드 하는 명령어
+      $ docker pull [OPTION] NAME[:TAG|@DIGEST]
+      최신버전으로 업데이트 하고 싶을 때 pull 명령어 사용
+
+#### - **이미지 삭제**
+* rmi
+    - 이미지 삭제
+      $ docker rmi [OPTION] IMAGE [IMAGE ...]
+      실행중인 이미지는 삭제 불가능함
+
+#### - **네트워크 만들기**
+- 도커 컨테이너 끼리 통신가능한 가상의 네트워크
+    ```c
+    $ docker network create [OPTIONS] NETWORK
+
+    $ docker network create app-network
+
+    $ docker network connect [OPTIONS] NETWORK CONTAINER
+
+    $ docker network connect app-network mysql
+
+    $ docker run -d -p 8080:80 \
+     --network=app-network \
+     -e WORDPRESS_DB_HOST=mysql \
+     -e WORDPRESS_DB_NAME=wp \
+     -e WORDPRESS_DB_USER=wp \
+     -e WORDPRESS_DB_PASSWORD=wp \
+     wordpress        
+    ```
+
+#### - **Docker Compose**
+- docker-compose.yml
+
+    ```c
+    version: '2'
+    services:
+     db:
+     image: mysql:5.7
+     volumes:
+     - ./mysql:/var/lib/mysql
+     restart: always
+     environment:
+     MYSQL_ROOT_PASSWORD: wordpress
+     MYSQL_DATABASE: wordpress
+     MYSQL_USER: wordpress
+     MYSQL_PASSWORD: wordpress
+
+     wordpress:
+     image: wordpress:latest
+     volumes:
+     - ./wp:/var/www/html
+     ports:
+     - "8000:80"
+     restart: always
+     environment:
+     WORDPRESS_DB_HOST: db:3306
+     WORDPRESS_DB_PASSWORD: wordpress
+
+    ```
+
+  * $ docker-compose up -d
+    docker compose 를 이용하여 mysql , wordpress를 실행
+
+  * $ docker compose down
+    mysql, wordpress 종료
+
+  * 실제 운영환경에서는 docker compose를 사용함.
+
+## [3강] 이미지 만들고 배포하기
+#### - **실습 - 컨테이너를 이미지로 저장하기**
+  - 이미지 : 특정 프로세스를 실행하기 위한 환경
+      * 계층화된 파일 시스템
+      * 이미지는 파일들의 집합
+      * 프로세스가 실행되는 환경도 결국 파일들의 집합
+      * commit 하지 않으면, 컨테이너의 설치들이 저장되어 지지 않음
+
+      <img data-action="zoom" src='{{ "/image/42.PNG" | relative_url }}' alt='absolute'>
+
+  1. Git 설치하기
+      - $ docker run -it ubuntu:latest bash
+      -  apt-get update
+      -  apt-get install git
+      -  git version
+  2. diff를 통해 base imange와 컨테이너 차이 파악
+      - $ docker diff git  grep git  head -n 10
+  3. commit 으로 새로운 이미지 생성
+      - $ docker commit a366575c258a ubuntu:git(태그)
+      - $ docker images
+        <img data-action="zoom" src='{{ "/image/43.PNG" | relative_url }}' alt='absolute'>
+
+  4. 생성된 이미지 확인
+      - $ docker run -it ubuntu:git bash 실행 시 git 설치되어 있음
+
+#### - **dockerfile 로 이미지 만들기**
+
+- 이미지 생성 과정을 기술한 docker 전용 DSL
+  * FROM <이미지 이름> / FROM ubuntu:16.04
+  * ADD <추가할 파일> < 파일이 추가될 경로> / ADD data.txt /tmp/data.txt
+  * RUN <명령어> / RUN apt-get update
+  * WORKDIR /tmp 작업 디렉터리 변경
+  * ENV AWESIME VAR FOOBARK 환경변수 지정
+  * EXPOSE <포트> 컨테이너로 실행 시 노출시킬 포트
+  * CMD <명령어> 이미지 기본실행 명령어
+
+    <img data-action="zoom" src='{{ "/image/44.PNG" | relative_url }}' alt='absolute'>
+
+- $ docker build -t ubuntu:git02 .
+  . : 지금 디렉토리 안에 있는 도커 파일을 이용하여 이미지  생성
+
+- 실제로는 dockerfile 을 사용 하여 작업함
+
+- dockerfile 로 이미지 만들기 - Ruby on Rails Application
+<img data-action="zoom" src='{{ "/image/45.PNG" | relative_url }}' alt='absolute'>
+
+#### - **도커 레지스트리**
+
+- herb.docker.com
+- 회원가입
+- repository 생성
+- $ docker login
+
+  <img data-action="zoom" src='{{ "/image/46.PNG" | relative_url }}' alt='absolute'>
+
+- $ docker push das101096/wordpress:latest
+
+  <img data-action="zoom" src='{{ "/image/47.PNG" | relative_url }}' alt='absolute'>
+- $ docker pull das101096/wordpress:latest
+- $ docker run --rm -p 4567:4567 das101096/wordpress:latest
+
+## [4강] 도커 이미지 빌드 환경 만들기
+
+#### - **지속적 통합 및 전달(CI/CD)**
+- CI Continuous Integration
+- CD Continuous Delivery
+- 지속적으로 소스를 통합, 빌드, 테스트, 배포하는 과정
+- CI 테스트 / 빌드 , CD 전달 / 배포
+- 도커를 이용해 제품을 배포하는 과정
+    * 소스 저장소에 최신 소스를 저장
+    * 전체 소스를 다운로드
+    * 테스트
+    * 도커 이미지 만들기
+    * 도커 이미지 저장하기
+    * 애플리케이션 업데이트
+- 자동화 할 경우, 개발자는 최신소스를 저장하는 것 까지만 하면 된다.
+- 자동화 도구
+    * jenkins
+    * TrevisCI
+    * CircleCI
+
+#### - **Jenkins**
+- 빌드 / 테스트 / 코드분석 / 배포 / 알림 등 다양한 기능을 제공
+- Master / Agent 구성 (하나의 Master에 다수의 Agent 구성 가능)
+- 많은 플러그인 있음
+
+#### - **Jenkins 실행**
+- $ docker run -u root --rm -p 8080:8080 --name jenkins -v C:\jenkins:/var/jenkins_home subicura/jenkins:2
+
+- $ docker run -u root --rm -p 8080:8080 --name jenkins -v C:\jenkins:/var/jenkins_home -v /var/run/docker.sock:/var/run/docker.sock subicura/jenkins:2
+
+- http://localhost:8080 접속
+
+  <img data-action="zoom" src='{{ "/image/48.PNG" | relative_url }}' alt='absolute'>
+
+  <img data-action="zoom" src='{{ "/image/49.PNG" | relative_url }}' alt='absolute'>
+
+#### - **자동배포 스크립트 만들기**
+- pipeline
+
+    <img data-action="zoom" src='{{ "/image/50.PNG" | relative_url }}' alt='absolute'>
+
+- create jop - pipeline
+
+    <img data-action="zoom" src='{{ "/image/51.PNG" | relative_url }}' alt='absolute'>
+
+- 빈 stage 구성
+
+    <img data-action="zoom" src='{{ "/image/52.PNG" | relative_url }}' alt='absolute'>
+
+- Build
+
+    <img data-action="zoom" src='{{ "/image/53.PNG" | relative_url }}' alt='absolute'>
+
+- 자동배포 스크립트 - Pull
+
+    ```c
+    stage('Pull') {
+        git 'https://github.com/subicura/docker-jenkins-workshop.git'
+    }
+    ```
+
+    <img data-action="zoom" src='{{ "/image/54.PNG" | relative_url }}' alt='absolute'>
+
+- 자동배포 스크립트 - build
+
+    ```c
+    stage('Build') {
+        sh(script: '''docker build --force-rm=true -t das101096/ruby-app:latest .''')
+    }
+    ```
+
+    ★★ 윈도우일 경우 스크립트에 하단 내용 꼭 감싸기 ! (완전 헤멤)
+        - withEnv(["DOCKER_HOST=tcp://host.docker.internal:2375"])
+
+    ★ Docker hub ID & PW jenkins에 저장
+
+    <img data-action="zoom" src='{{ "/image/55.PNG" | relative_url }}' alt='absolute'>
+
+    <img data-action="zoom" src='{{ "/image/56.PNG" | relative_url }}' alt='absolute'>
+
+- 자동배포 스크립트 - tag
+
+    ```c
+    stage('Tag') {
+      sh(script: '''docker tag ${DOCKER_USER_ID}/ruby-app ${DOCKER_USER_ID}/ruby-app:${BUILD_NUMBER}''')
+    }
+    ```
+    <img data-action="zoom" src='{{ "/image/57.PNG" | relative_url }}' alt='absolute'>
+
+    <img data-action="zoom" src='{{ "/image/58.PNG" | relative_url }}' alt='absolute'>
+
+- 자동배포 스크립트 - push
+
+    ```c
+    stage('Push') {
+      sh(script: 'docker login -u ${DOCKER_USER_ID} -p ${DOCKER_USER_PASSWORD}')
+      sh(script: 'docker push ${DOCKER_USER_ID}/ruby-app:${BUILD_NUMBER}')
+      sh(script: 'docker push ${DOCKER_USER_ID}/ruby-app:latest')
+    }
+    ```
+
+    <img data-action="zoom" src='{{ "/image/59.PNG" | relative_url }}' alt='absolute'>
+
+    <img data-action="zoom" src='{{ "/image/60.PNG" | relative_url }}' alt='absolute'>  
+
+- 자동배포 스크립트 - deploy
+
+    ```c
+    stage('Deploy') {
+      try {
+        sh(script: 'docker stop ruby-app')
+        sh(script: 'docker rm ruby-app')
+      } catch(e) {
+        echo "No ruby-app container exists"
+      }
+        sh(script: '''docker run -d -p 10000:4567 --name=ruby-app ${DOCKER_USER_ID}/ruby-app:${BUILD_NUMBER}''')
+    }
+    ```
+    <img data-action="zoom" src='{{ "/image/61.PNG" | relative_url }}' alt='absolute'>
+
+    <img data-action="zoom" src='{{ "/image/62.PNG" | relative_url }}' alt='absolute'>
+
+#### ★ 개선하기 1 Docker compose
+- 실제 운영에서는 Docker Compose를 사용함
+- stage 의 docker build 부분을 sh(script: 'docker-compose build app') 으로 변경하여 사용함
+- stage 의 docker deploy 부분을 sh(script: 'docker-compose up -d production')
+- compose up 이 실제 컨테이너가 있으면 죽이고 다시 run하는 작업을 해준다
+
+#### ★ 개선하기 2 (소스변경>자동배포)
+- 소스가 변경되면 자동으로 배포하는 설정 추가
+- Build now는 거의 사용하지 않음
+- Configure > Build Triggers > Poll SCM = H/S * * * *
+- 주기적으로 깃헙에게 poll 을 보내어 바뀐게 있을 경우 자동 배포
+
+    <img data-action="zoom" src='{{ "/image/63.PNG" | relative_url }}' alt='absolute'>
+
+    <img data-action="zoom" src='{{ "/image/64.PNG" | relative_url }}' alt='absolute'>
+
+- 이분 깃헙 푸시를 할 수 없어서 동영상 캡쳐로 대체함
+
+    <img data-action="zoom" src='{{ "/image/65.PNG" | relative_url }}' alt='absolute'>
+
+    <img data-action="zoom" src='{{ "/image/66.PNG" | relative_url }}' alt='absolute'>
+
+    <img data-action="zoom" src='{{ "/image/67.PNG" | relative_url }}' alt='absolute'>
+
+#### ★ 개선하기 3 (Pipelinescript from SCM)
+- 젠킨스 설정 파일을 Git 으로 관리하기
+- Configuration > Pipeline / Pipeline script from SCM 선택 후 git 선택
+- Repository URL 적기 ex)  https://github.com/subicura/docker-jenkins-workshop.git
+- Script Path 적기
+
+#### 실제 사례
+  - ChatOps : 자동배포 방지, 이미지 생성이 완료되면 배포 시, 채팅 명령어를 입력해야 실행됨
+  - Slack - message buttons
+  - Slack - message menu
+  - 브랜치 기반 테스트 배포 전략
+  - 무중단 배포
+
+      <img data-action="zoom" src='{{ "/image/68.PNG" | relative_url }}' alt='absolute'>
+
+
+### 아주 재미있고 유익한 강의였다 ^-^b
