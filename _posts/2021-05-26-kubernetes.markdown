@@ -145,7 +145,7 @@ T아카데미 - 컨테이너 오케스트레이션 쿠버네티스 살펴보기
       * docker swarm
           - 호스트 os에 Agent만 설치하면 간단하게 작동하고 빠름
           - 단순한 구조에서 효과적임
-      * **<span style="color:red">kubernates</span>**
+      * **<span style="color:red">kubernetes</span>**
           - 구글에서 개발한 컨테이너 배포 확장 운영 도구
           - 표준
           - 대규모에 적함
@@ -176,3 +176,85 @@ T아카데미 - 컨테이너 오케스트레이션 쿠버네티스 살펴보기
       * 확장 가능한 설계
 
         <img data-action="zoom" src='{{ "/image/72.PNG" | relative_url }}' alt='absolute'>
+
+## [2강] 쿠버네티스 & 쿠버네티스 아키텍쳐
+
+#### - **쿠버네티스란?**
+  - Docker - Build, Ship, Run, Deployment
+  - docker 는 Deploy 까지 보장하지 않음
+  - $DOCKER_HOST=production.host.ip docker run -d -p 80:80 awsome-App
+  - 매번 docker 명령어를 입력하는 것을 자동화하자!
+  - 복잡한 서버를 효과적으로 관리하기 위해 오케스트레이션 툴을 도입해 보자!
+  - 컨테이너 관리도구의 춘추전국시대
+  - 구글이 컨테이너 배포 시스템으로 사용하던 borg 를 기반으로 만든 오픈소스
+  - 쿠버네티스를 기반으로 한 플랫폼들의 등장
+
+#### - **쿠버네티스의 특징**
+  1. 상태관리 : 상태를 선언하고 선언한 상태를 유지 / 노드가 죽거나 컨테이너의 응답이 없을경우 자동으로 복구
+  2. 스케줄링 : 클러스터의 여러 노드 중 조건에 맞는 노드를 찾아 컨테이너를 배치
+  3. 클러스터 : 가상 네트워크를 통해 하나의 서버에 있는 것처럼 통신
+  4. 서비스 디스커버리 : 서로 다른 서비스를 쉽게 찾고 통신 가능
+  5. 리소스 모니터링 : cAdvisor 를 통한 리소스 모니터링
+  6. 스케일링 : 리소스에 따라 자동으로 서비스를 조정함
+  7. RollOut / RollBack : 배포 / 롤백 및 버전 관리
+  8. 빠른 업데이트
+  9. 다양한 배포 방식
+
+      <img data-action="zoom" src='{{ "/image/73.PNG" | relative_url }}' alt='absolute'>
+
+        * DAEMON SET : 모든 노드에 꼭 하나씩 띄우고 싶을 경우, EX 모든서버 모니터링
+        * REPLICA SET : 갯수 제어, EX 3대를 띄우고 싶음
+        * STATEFUL SETS : 순서를 지정하고 싶을 경우
+        * JOB
+        * REPLICATION CONTROLLER  : 현재 사용 x
+
+  10. Ingress 설정 : 도메인, ip, port 도메인과 path를 지정하면 자동으로 인지
+  11. namespace & label
+  12. RBAC : 누가 어떤권한을 가지고 있을지 제어 (누가 - user, 어떻게? - pod)
+  13. 다양한 환경 지원
+
+#### - **기본 개념**
+
+  <img data-action="zoom" src='{{ "/image/74.PNG" | relative_url }}' alt='absolute'>
+
+  - pod
+      * 컨테이너를 한번 더 감싼 개념을 pod 이라고 함
+      * 하나의 팟에 여러 컨테이너가 들어가면 서로 통신 가능
+
+        <img data-action="zoom" src='{{ "/image/75.PNG" | relative_url }}' alt='absolute'>
+
+  -  ReplicaSet
+      * replicas 라는 옵션으로 갯수 지정
+
+        <img data-action="zoom" src='{{ "/image/76.PNG" | relative_url }}' alt='absolute'>
+
+  - 상태를 어떻게 관리할까 ? Object Spec - YAML
+      * 나는 XX 라는 이름의 팟을 갖고싶다.
+        그 안에는 N개의 XX 라는 이름을 가진 컨테이너가 있고 XX 이미지를 사용합니다.
+      * desired state
+
+  - **<span style="color:red">원하는 상태 (desired state)를 다양한 오브젝트에 라벨을 붙여 정의(yaml) 하고 API 서버에 전달한다.</span>**
+
+  - Architecture
+
+      <img data-action="zoom" src='{{ "/image/77.PNG" | relative_url }}' alt='absolute'>
+
+      * Master : 마스터 서버는 다양한 모듈이 확장성을 고려하여 기능별로 쪼개져 있는 것이 특징, 관리자만 접속할 수 있도록 보안 설정을 해야 하고 마스터서버가 죽으면 클러스터를 관리할 수 없기 때문에 보통 3대를 구성하여 안정성을 높인다.
+      * Node : 노드 서버는 마스터서버와 통신하면서 필요한 Pod를 생성하고 네트워크와 볼륨을 설정
+      * kubectl : 명령 도구
+
+      <img data-action="zoom" src='{{ "/image/78.PNG" | relative_url }}' alt='absolute'>
+
+      * API Server 운영자 및 내부 노드와 통신하기 위한 인터페이스 /HTTP(S) RestAPI 로 노출되어 있고 모든 명령은 여기로 통한다.
+      * Controller Mnager 다양한 컨트롤러 (복제,배포,상태,크론,,) 을 관리하고 API Server와 통신하여 작업을 수행
+      * Scheduler 서비스를 리소스 상황에 맞게 적절한 노드에 배치
+      * etcd 가볍고 빠른 분산형 key-value 저장소 / 설정 및 상태 저장
+
+      <img data-action="zoom" src='{{ "/image/79.PNG" | relative_url }}' alt='absolute'>
+
+      * 실제 서비스 (컨테이너) 가 실행되는 서버, 마스터의 Api server 와 통신하며 서비스를 생성, 상태관리
+      * kubelet 서비스를 실행 중지하고 상태를 체크하여 계속해서 살아있는 상태로 관리
+      * proxy 네트워크 프록시와 로드 발란서 역할 cretes a iptable rule..
+      * Docker(containerd 또는 rkt 또는 Hyper) 도커 뿐만 아니라 다양한 컨테이너 엔진 지원
+
+      <img data-action="zoom" src='{{ "/image/80.PNG" | relative_url }}' alt='absolute'>
