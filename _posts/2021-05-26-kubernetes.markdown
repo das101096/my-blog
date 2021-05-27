@@ -258,3 +258,385 @@ T아카데미 - 컨테이너 오케스트레이션 쿠버네티스 살펴보기
       * Docker(containerd 또는 rkt 또는 Hyper) 도커 뿐만 아니라 다양한 컨테이너 엔진 지원
 
       <img data-action="zoom" src='{{ "/image/80.PNG" | relative_url }}' alt='absolute'>
+
+## [3강] 실습 환경구성
+
+* https://github.com/subicura/workshop-init/blob/master/0_aws_lightsail_console.md 참고
+#### **1. aws 가입**
+#### **2. lightsail 접속**
+#### **3. 새 인스턴스 만들기**
+#### **4. publicIP:4200 으로 접속**
+
+  <img data-action="zoom" src='{{ "/image/84.PNG" | relative_url }}' alt='absolute'>
+
+#### **5. jq 설치 : json을 파싱해서 사용할 수 있는 프로그램**
+
+```c
+sudo apt install -y jq
+```
+
+#### **6.  docker & docker compose 설치**
+```c
+curl -fsSL https://get.docker.com/ | sudo sh
+sudo usermod -aG docker $USER
+
+sudo curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+
+# check (re-login)
+docker version
+docker-compose version
+
+# reboot
+sudo reboot
+```      
+#### **7. k3s : 경량화된 쿠버네티스**
+
+```c
+# install
+curl -sfL https://get.k3s.io | sh -
+sudo chown ubuntu:ubuntu /etc/rancher/k3s/k3s.yaml
+
+# 확인
+kubectl get nodes
+
+# cube config
+cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+```  
+
+#### **8. Local path provisioner**
+
+```c
+# install
+kubectl apply -f https://raw.githubusercontent.com/rancher/local-path-provisioner/master/deploy/local-path-storage.yaml
+
+# set default
+kubectl patch storageclass local-path -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"true"}}}'
+
+# 확인
+kubectl get storageclass
+```
+
+
+#### **9. code server**
+  ```c
+  wget https://github.com/cdr/code-server/releases/download/v3.8.0/code-server-3.8.0-linux-amd64.tar.gz
+  tar xvfz code-server-3.8.0-linux-amd64.tar.gz
+  mkdir -p ~/.config/code-server
+  curl https://gist.githubusercontent.com/subicura/d7ac0cc6e662e8382e191d81c140c35b/raw/d663f09e9730ab7fe7bb2dc17f7ef59d9da43d4f/config.yaml -o ~/.config/code-server/config.yaml
+  mkdir ~/project
+  sudo curl https://gist.githubusercontent.com/subicura/c803fd68262736d83ee67b201d87fb3c/raw/c6370798076c989becc198901ebd0d555d2f70d9/codeserver.service -o /lib/systemd/system/codeserver.service
+  sudo systemctl start codeserver
+  sudo systemctl enable codeserver
+  ```    
+  <img data-action="zoom" src='{{ "/image/85.PNG" | relative_url }}' alt='absolute'>
+
+## [4강] Docker(도커) 실습
+#### - **기본 명령어**
+
+  - run : 컨테이너 실행
+  - ps : 컨테이너 목록 확인
+  - stop : 컨테이너 중지
+  - rm : 컨테이너 제거
+  - logs : 컨테이너 로그 조회
+  - images : 이미지 목록 확인
+  - pull : 이미지 다운로드
+  - rmi : 이미지 삭제
+
+#### - **실습**
+  <img data-action="zoom" src='{{ "/image/86.PNG" | relative_url }}' alt='absolute'>
+
+  <img data-action="zoom" src='{{ "/image/87.PNG" | relative_url }}' alt='absolute'>
+
+  <img data-action="zoom" src='{{ "/image/88.PNG" | relative_url }}' alt='absolute'>  
+
+- 네트워크 설정
+
+  <img data-action="zoom" src='{{ "/image/89.PNG" | relative_url }}' alt='absolute'>  
+
+  <img data-action="zoom" src='{{ "/image/88.PNG" | relative_url }}' alt='absolute'>  
+
+- exam
+
+  <img data-action="zoom" src='{{ "/image/90.PNG" | relative_url }}' alt='absolute'>  
+
+  - 내가 쓴 답
+      <img data-action="zoom" src='{{ "/image/91.PNG" | relative_url }}' alt='absolute'>
+
+  - 정답
+    ```c
+    docker run --name=mongodb --network=app-network mongo:4
+
+    docker run -d --name=backend --network=app-network -e PORT=8000 -e GUESTBOOK_DB_ADDR=mongodb:27017 subicura.guestbook-backend:latest
+
+    docker run -d -p 3000:8000 -e PORT=8000 --network=app-network -e PORT=8000 -e GUESTBOOK_DB_ADDR=backend:8000 subicura.guestbook-frontend:latest
+    ```
+## [5강] Docker-Compose(도커 컴포즈) 실습
+#### -**기본 명령어**
+
+  - up : 시작
+  - stop : 중지
+  - down : 중지 후 삭제
+  - ps : 목록
+  - logs : 로그보기
+
+    ```c
+    # guide-02/docker-workshop-app/docker-compose.yml
+    version: '3'
+    services:
+      web:
+        image: subicura/docker-workshop-app:1
+        ports:
+          - "4567:4567"
+    ```
+
+    <img data-action="zoom" src='{{ "/image/92.PNG" | relative_url }}' alt='absolute'>
+
+    <img data-action="zoom" src='{{ "/image/93.PNG" | relative_url }}' alt='absolute'>
+
+    ```c
+    # guide-02/wordpress/docker-compose.yml
+    version: '3'
+    services:
+      wordpress:
+        image: wordpress
+        environment:
+          WORDPRESS_DB_HOST: mysql
+          WORDPRESS_DB_NAME: wp
+          WORDPRESS_DB_USER: wp
+          WORDPRESS_DB_PASSWORD: wp
+        ports:
+          - "8000:80"
+        restart: always # mysql 이 살아있을 때 까지 재시작함
+      mysql:
+        image: mysql:5.7
+        environment:
+          MYSQL_ROOT_PASSWORD: wp
+          MYSQL_DATABASE: wp
+          MYSQL_USER: wp
+          MYSQL_PASSWORD: wp
+
+    # up
+      docker-compose up -d
+    ```
+
+    <img data-action="zoom" src='{{ "/image/88.PNG" | relative_url }}' alt='absolute'>
+
+    - docker-compose down
+        * docker stop + rm
+
+## [6강] Kubernetes(쿠버네티스) 실습 1 (kubectl/pod/replicaset/deployment)
+#### - **Task 1. kubectl**
+  - 쿠버네티스의 API 서버와 통신하기 위해 사용
+  - alias k='kubectl' 을 입력하여 사용하기 쉽게 만들자
+  - 기본 명령어
+      * apply : desired status 적용
+      * get : 현재 리소스의 목록 조회
+      * describe : 상세 내용 조회
+      * delete : 해당 리소스 삭제
+      * log : 로그 조회
+      * exec : 해당 컨테이너로 접속
+
+  - 명령 vs 선언
+      ```c
+        # 명령
+        kubectl scale --replicas=3 rs/whoami
+
+        # 선언 (실제 운영에서 사용됨)
+        apiVersion: apps/vlveta2
+        kind: replicaset
+        metadata:
+          name: whoami
+        spec:
+          replicas:3
+      ```  
+
+  - 기본 오브젝트
+    다음 오브젝트들을 생성하고 조회하고 삭제하는 작업을 합니다.
+      * node : k get node
+      * Pod : k get pod
+      * ReplicaSet
+      * deployment
+      * service : k get service
+      * loadbalancer
+      * Ingress
+      * volumes
+      * configmap
+      * secret
+      * namespace
+      * 전체 오브젝트 조회 k api-resouces
+
+  - 다양한 사용범
+      * get
+        ```c
+        # pod, replicaset, deployment, service 조회
+        kubectl get all
+
+        # node 조회
+        kubectl get no
+        kubectl get node
+        kubectl get nodes
+
+        # 결과 포멧 변경
+        kubectl get nodes -o wide
+        kubectl get nodes -o yaml
+        kubectl get nodes -o json
+        kubectl get nodes -o json |
+              jq ".items[] | {name:.metadata.name} + .status.capacity" # json 특정 값 찾기
+        ```
+      * describe
+        ```c
+        # kubectl describe type/name
+        # kubectl describe type name
+        kubectl describe node <node name>
+        kubectl describe node/<node name>
+        ```  
+      * 그 외 자주 쓰이는 명령어
+        ```c
+        kubectl exec -it <POD_NAME>
+        kubectl logs -f <POD_NAME|TYPE/NAME>
+
+        kubectl apply -f <FILENAME> ★
+        kubectl delete -f <FILENAME> ★
+        ```  
+#### - **Task 2. Pod**
+  - 명령어
+
+    <img data-action="zoom" src='{{ "/image/94.PNG" | relative_url }}' alt='absolute'>
+
+    <img data-action="zoom" src='{{ "/image/95.PNG" | relative_url }}' alt='absolute'>
+
+  - YAML 파일
+    ```c
+    #guide-03/whoami-pod.yml
+      apiVersion: v1 #필수
+      kind: Pod #필수
+      metadata:
+        name: whoami
+        labels:
+          type: app
+      spec:
+        containers:
+        - name: app
+          image: subicura/whoami:1
+
+    # 적용
+      k apply -f whoami-pod.yml
+      k delete -f whoami-pod.yml
+    ```
+    <img data-action="zoom" src='{{ "/image/96.PNG" | relative_url }}' alt='absolute'>
+
+  - Pod Ready
+
+    <img data-action="zoom" src='{{ "/image/97.PNG" | relative_url }}' alt='absolute'>
+
+      * app 이 생성 된 후, 상태 값 체크 - livenessProbe
+
+        ```c
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: whoami-lp
+          labels:
+            type: app
+        spec:
+          containers:
+          - name: app
+            image: subicura/whoami:1
+            livenessProbe:
+              httpGet:
+                path: /not/exist
+                port: 8080
+              initialDelaySeconds: 5
+              timeoutSeconds: 2 # Default 1
+              periodSeconds: 5 # Defaults 10
+              failureThreshold: 1 # Defaults 3        
+        ```
+
+          <img data-action="zoom" src='{{ "/image/98.PNG" | relative_url }}' alt='absolute'>
+
+          - 하단 Liveness probe failed 에러 확인
+
+      * 준비가 되어 있는지 조사 - readinessProbe
+
+        ```c
+        apiVersion: v1
+        kind: Pod
+        metadata:
+        name: whoami-rp
+        labels:
+          type: app
+        spec:
+        containers:
+        - name: app
+          image: subicura/whoami:1
+          readinessProbe:
+            httpGet:
+              path: /not/exist
+              port: 8080
+            initialDelaySeconds: 5
+            timeoutSeconds: 2 # Default 1
+            periodSeconds: 5 # Defaults 10
+            failureThreshold: 1 # Defaults 3     
+        ```
+
+          <img data-action="zoom" src='{{ "/image/99.PNG" | relative_url }}' alt='absolute'>
+
+          - 하단 Readiness probe failed 에러 확인
+
+      * health check 예제 (실제로 살아있는 포트 헬스체크)
+
+        ```c
+        apiVersion: v1
+        kind: Pod
+        metadata:
+        name: whoami-health
+        labels:
+          type: app
+        spec:
+        containers:
+        - name: app
+          image: subicura/whoami:1
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 4567
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 4567  
+        ```
+
+          <img data-action="zoom" src='{{ "/image/100.PNG" | relative_url }}' alt='absolute'>
+
+          - 하단 정상 동작 확인
+
+      * multi container 예제
+
+        ```c
+        apiVersion: v1
+        kind: Pod
+        metadata:
+          name: whoami-redis
+          labels:
+            type: stack
+        spec:
+          containers:
+          - name: app
+            image: subicura/whoami-redis:1
+            env:
+            - name: REDIS_HOST
+              value: "localhost"
+          - name: db
+            image: redis
+        ```
+
+          <img data-action="zoom" src='{{ "/image/101.PNG" | relative_url }}' alt='absolute'>
+
+          <img data-action="zoom" src='{{ "/image/102.PNG" | relative_url }}' alt='absolute'>
+
+          <img data-action="zoom" src='{{ "/image/103.PNG" | relative_url }}' alt='absolute'>
+
+          - Pod 안에 있는 컨테이너는 같은 IP 다른 PORT 를 사용함
+          - 컨테이너 개수 pod/whoami-redis 0/2 , 2/2 2개 확인
+          - app 에 접속하여 redis 접근 가능 확인
