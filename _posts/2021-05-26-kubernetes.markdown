@@ -371,7 +371,9 @@ kubectl get storageclass
 
     docker run -d -p 3000:8000 -e PORT=8000 --network=app-network -e PORT=8000 -e GUESTBOOK_DB_ADDR=backend:8000 subicura.guestbook-frontend:latest
     ```
+
 ## [5강] Docker-Compose(도커 컴포즈) 실습
+
 #### -**기본 명령어**
 
   - up : 시작
@@ -426,8 +428,10 @@ kubectl get storageclass
         * docker stop + rm
 
 ## [6강] Kubernetes(쿠버네티스) 실습 1 (kubectl/pod/replicaset/deployment)
+
 #### - **Task 1. kubectl**
-  - 쿠버네티스의 API 서버와 통신하기 위해 사용
+
+  - 쿠버네티스의 API 서버와 통신하기 위해 사용  
   - alias k='kubectl' 을 입력하여 사용하기 쉽게 만들자
   - 기본 명령어
       * apply : desired status 적용
@@ -499,7 +503,9 @@ kubectl get storageclass
         kubectl apply -f <FILENAME> ★
         kubectl delete -f <FILENAME> ★
         ```  
+
 #### - **Task 2. Pod**
+
   - 명령어
 
     <img data-action="zoom" src='{{ "/image/94.PNG" | relative_url }}' alt='absolute'>
@@ -640,3 +646,401 @@ kubectl get storageclass
           - Pod 안에 있는 컨테이너는 같은 IP 다른 PORT 를 사용함
           - 컨테이너 개수 pod/whoami-redis 0/2 , 2/2 2개 확인
           - app 에 접속하여 redis 접근 가능 확인
+
+  - Exam1. Pod 만들기
+
+      <img data-action="zoom" src='{{ "/image/104.PNG" | relative_url }}' alt='absolute'>
+
+      * 나의 답변 (정답~)
+
+          ```c
+          #mongodb.yml
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            name: mongodb
+            labels:
+              type: mongo
+          spec:
+            containers:
+            - name: mongodb
+              image: mongo:4
+          ```
+
+          <img data-action="zoom" src='{{ "/image/105.PNG" | relative_url }}' alt='absolute'>
+
+#### - **Task 3. Replicaset**
+
+  - 기본 예제
+    ```c
+    apiVersion: apps/v1beta2 #필수
+    kind: ReplicaSet #필수
+    metadata:
+      name: whoami-rs #필수
+    spec:
+      replicas: 1 # 해당 리플리카셋의 복제셋은 1개
+      selector:  # type이 app인 whoami 서비스가 하나가 있는지 체크
+        matchLabels:
+          type: app
+          service: whoami
+      template: # 체크를 했는데 해당 팟이 없으면, 하단 팟을 만들겠다.
+        metadata:
+          labels: #필수
+            type: app
+            service: whoami
+        spec:
+          containers:
+          - name: whoami
+            image: subicura/whoami:1
+            livenessProbe:
+              httpGet:
+                path: /
+                port: 4567
+    ```
+
+      - https://kubernetes.io/ko/docs/concepts/workloads/controllers/replicaset/ 참고
+
+          <img data-action="zoom" src='{{ "/image/106.PNG" | relative_url }}' alt='absolute'>
+
+      - type=app, service=whoami 인 팟 1개를 계속해서 유지함
+
+          <img data-action="zoom" src='{{ "/image/107.PNG" | relative_url }}' alt='absolute'>
+
+  - Exam 1. 다음 조건을 만족하는 replicaset을 만들어 보세요.
+
+      * 나의 답변 (정답~)
+
+          ```c
+          apiVersion: apps/v1
+          kind: ReplicaSet
+          metadata:
+            name: nginx
+          spec:
+            replicas: 3
+            selector:
+              matchLabels:
+                type: nginx
+                service: whoami
+            template:
+              metadata:
+                labels:
+                  type: nginx
+                  service: whoami
+              spec:
+                containers:
+                - name: nginx
+                  image: nginx
+          ```
+
+          <img data-action="zoom" src='{{ "/image/108.PNG" | relative_url }}' alt='absolute'>
+
+#### - **Task 4. Deployment**
+
+  - Deployment = replicaset + 버전관리 + 롤백기능
+
+  - 기본예제
+      ```c
+      apiVersion: apps/v1beta2
+      kind: Deployment
+      metadata:
+        name: whoami-deploy
+      spec:
+        replicas: 3
+        selector:
+          matchLabels:
+            type: app
+            service: whoami
+        template:
+          metadata:
+            labels:
+              type: app
+              service: whoami
+          spec:
+            containers:
+            - name: whoami
+              image: subicura/whoami:1
+              livenessProbe:
+                httpGet:
+                  path: /
+                  port: 4567
+      ```
+
+      - deployment 생성시 replicaset, pod 생성됨
+
+        <img data-action="zoom" src='{{ "/image/109.PNG" | relative_url }}' alt='absolute'>
+
+      - 이미지 버전 변경 시 , 원래 있던 3개 pod 이 종료되고 새로이 3개가 생김
+      - 리플리카셋이 1개 -> 2개로 변경됨   
+
+        <img data-action="zoom" src='{{ "/image/110.PNG" | relative_url }}' alt='absolute'>      
+
+      - kubectl rollout history -f whoami-deploy.yml 히스토리 조회
+      - kubectl rollout history -f whoami-deploy.yml --revision=2 해당 리비전의 히스토리 조회
+      - kubectl rollout undo deploy/whoami-deploy --to-revision=3 해당 리비전으로 undo
+
+        <img data-action="zoom" src='{{ "/image/111.PNG" | relative_url }}' alt='absolute'>  
+
+## [7강] Kubernetes(쿠버네티스) 실습 2 (service/load balancer/ingress)
+
+#### - **Task 5. Service**
+
+  - 직접 접속해보자 !  
+
+  - docker compose 에서 app 생성 시,  
+    app-network를 사용하여 포트 명시 / 네트워크 사용 2가지 방식이 있었음  
+    <span style="color:red">docker compose 는 네트워크 이름을 입력하면 자동으로 연결해주는 방식<span>  
+    <span style="color:red">쿠버네티스는 따로 한 번 더 입력해줘야함<span>
+
+  - Cluster IP
+    디폴트 설정으로,  
+    서비스에 클러스터 IP (내부 IP)를 할당한다.  
+    <span style="color:red">쿠버네티스 클러스터 내에서는 이 서비스에 접근이 가능하지만,  
+    클러스터 외부에서는 외부 IP 를 할당  받지 못했기 때문에, 접근이 불가능하다.<span>  
+
+  - 예시
+      ```c
+      apiVersion: v1
+      kind: service
+      metadata:
+        name: my-internal-service
+      sepc:
+        selector:
+          app: my-apps
+        #해당 부분 추가 - 쿠버네티스
+        type: ClusterIP
+        ports:
+        - name: http
+          port: 80
+          targetPort: 80
+          protocol: TCP
+        #해당 부분 추가 - 쿠버네티스          
+      ```
+  - 노드포트
+    클러스터 IP로만 접근이 가능한것이 아니라,  
+    모든 노드의 IP와 포트를 통해서도 접근이 가능하게 된다.
+    예를 들어 아래와 같이 hello-node-svc 라는 서비스를 NodePort 타입으로 선언을 하고,  
+    nodePort를 30036으로 설정하면,  
+    아래 설정에 따라 클러스터 IP의  80포트로도 접근이 가능하지만,  
+    모든 노드의 30036 포트로도 서비스를 접근할 수 있다.
+
+  - Load Balancer
+    외부 IP 를 가지고 있는 로드밸런서를 할당한다.  
+    외부 IP를 가지고 있기  때문에, 클러스터 외부에서 접근이 가능하다.
+    AWS 의 로드밸런서를 플러그인을 이용하여 붙여서 사용
+    일반적이지 않음
+
+  - ingress
+    Domain 과 path를 이용하여 원하는 서비스를 연결  
+
+  - 기본예제  
+
+      ```c
+      # guide-03/task-05/redis-app.yml
+      apiVersion: apps/v1beta2
+      kind: Deployment
+      metadata:
+        name: redis
+      spec:
+        selector:
+          matchLabels:
+            type: db
+            service: redis
+        template:
+          metadata:
+            labels:
+              type: db
+              service: redis
+          spec:
+            containers:
+            - name: redis
+              image: redis
+              ports:
+              - containerPort: 6379
+                protocol: TCP
+      ---
+
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: redis
+      spec:
+        ports:
+        - port: 6379
+          protocol: TCP
+        selector:
+          type: db
+          service: redis
+
+      #guide-03/task-05/whoami-deploy.yml
+      apiVersion: apps/v1beta2
+      kind: Deployment
+      metadata:
+        name: whoami
+      spec:
+        selector:
+          matchLabels:
+            type: app
+            service: whoami
+        template:
+          metadata:
+            labels:
+              type: app
+              service: whoami
+          spec:
+            containers:
+            - name: whoami
+              image: subicura/whoami-redis:1
+              env:
+              - name: REDIS_HOST
+                value: "redis"
+              - name: REDIS_PORT
+                value: "6379"
+      ```  
+
+      - 10.43.45.129 에 접근 시, redis로 접근 가능  
+        예제에는 pod이 1개 있지만, 만약 3개가 있다면 적절히 로드밸런싱해서 접속됨
+
+          <img data-action="zoom" src='{{ "/image/112.PNG" | relative_url }}' alt='absolute'>
+
+      - 리플리카셋을 3개로 늘린 후, APPLY 시 ENDPOINT가 3개로 증가함     
+
+          <img data-action="zoom" src='{{ "/image/113.PNG" | relative_url }}' alt='absolute'>        
+
+      - whoami-deploy.yml apply
+
+          <img data-action="zoom" src='{{ "/image/114.PNG" | relative_url }}' alt='absolute'>          
+
+      - whoami 팟으로 redis 접근 가능
+
+          <img data-action="zoom" src='{{ "/image/115.PNG" | relative_url }}' alt='absolute'>    
+
+  - 노드포트 예제
+
+      ```c
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: whoami
+      spec:
+        type: NodePort
+        ports:
+        - port: 4567
+          protocol: TCP
+        selector:
+          type: app
+          service: whoami
+      ```   
+
+      - XXXX:32298 접속 시,   
+        service가 whoami 이고,  
+        type 이 app 인 팟의 이름이 번갈아가면서 조회됨
+
+          <img data-action="zoom" src='{{ "/image/116.PNG" | relative_url }}' alt='absolute'>
+
+          <img data-action="zoom" src='{{ "/image/117.PNG" | relative_url }}' alt='absolute'>
+
+          <img data-action="zoom" src='{{ "/image/118.PNG" | relative_url }}' alt='absolute'>
+
+#### - **Task 6. Loadbanlance**
+
+  - 로드밸런서 예제 / 별도의 로드밸런서 (aws..) 가 생기고 그 로드밸런서에 접속해서 사용
+
+      ```c
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: whoami
+      spec:
+        type: LoadBalancer # aws나 구글 클라우드와 연결
+        ports:
+        - port: 4567
+          protocol: TCP
+        selector:
+          type: app
+          service: whoami
+      ```   
+
+#### - **Task 7. Ingress**
+
+  - wildcard DNS
+      * ip를 기반으로 도메인을 쉽게 사용할 수 있습니다. 실습에서 사용합니다.
+      * 숫자를 쓰면 곧 ip로 연결하는 도메인이 된다.
+      * sslip.io
+      * xip.io
+      * nip.io
+
+        <img data-action="zoom" src='{{ "/image/119.PNG" | relative_url }}' alt='absolute'>
+
+  - 기본예제 (Ingress 생성)
+
+      ```c
+      apiVersion: extensions/v1beta1
+      kind: Ingress
+      metadata:
+        name: whoami-v1
+        annotations:
+          ingress.kubernetes.io/rewrite-target: "/"
+          ingress.kubernetes.io/ssl-redirect: "false"
+      spec:
+        rules:
+        - host: v1.whoami.내아이피주소.sslip.io
+          http:
+            paths:
+            - path: /
+              backend:
+                serviceName: whoami-v1
+                servicePort: 4567
+      ```   
+
+  - 기본예제 (whoami-v1 서비스 생성)
+
+      ```c
+      apiVersion: apps/v1beta2
+      kind: Deployment
+      metadata:
+        name: whoami-v1
+      spec:
+        replicas: 3
+        selector:
+          matchLabels:
+            type: app
+            service: whoami
+            version: v1
+        template:
+          metadata:
+            labels:
+              type: app
+              service: whoami
+              version: v1
+          spec:
+            containers:
+            - name: whoami
+              image: subicura/whoami:1
+              livenessProbe:
+                httpGet:
+                  path: /
+                  port: 4567
+
+      ---
+
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: whoami-v1
+      spec:
+        ports:
+        - port: 4567
+          protocol: TCP
+        selector:
+          type: app
+          service: whoami
+          version: v1
+      ```   
+
+  - 결과 화면
+
+    <img data-action="zoom" src='{{ "/image/121.PNG" | relative_url }}' alt='absolute'>
+
+      * whoami-v1 팟의 이름이 순서대로 나열되어짐
+
+        <img data-action="zoom" src='{{ "/image/122.PNG" | relative_url }}' alt='absolute'>
