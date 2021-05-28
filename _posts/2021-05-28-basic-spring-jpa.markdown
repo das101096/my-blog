@@ -124,8 +124,24 @@ categories:
       @GeneratedValue  
       PK 자동 생성
 
-  1. repository 패키지, MemberJpaRepository.java 클래스 생성
+  2. repository 패키지, MemberJpaRepository.java 클래스 생성
 
       <img data-action="zoom" src='{{ "/image/132.PNG" | relative_url }}' alt='absolute'>  
       @PersistenceContext  
       스프링 컨테이너가 Entity Manager를 가져다줌
+
+  3. ctrl + shift + T 로 테스트
+
+      <img data-action="zoom" src='{{ "/image/133.PNG" | relative_url }}' alt='absolute'>    
+
+      <img data-action="zoom" src='{{ "/image/134.PNG" | relative_url }}' alt='absolute'>
+
+      <img data-action="zoom" src='{{ "/image/135.PNG" | relative_url }}' alt='absolute'>  
+      기본 생성자 protected 사용 이유  
+      jpa가 프록시를 사용할 때 쓸 수 있도록 private -> protected 로 변경
+
+      <img data-action="zoom" src='{{ "/image/136.PNG" | relative_url }}' alt='absolute'>  
+      ctrl + alt + v - 자동 변수 생성
+
+      <img data-action="zoom" src='{{ "/image/137.PNG" | relative_url }}' alt='absolute'>  
+      에러 발생
