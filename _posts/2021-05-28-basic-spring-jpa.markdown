@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "실전! 스프링 데이터 JPA"
-date:   2021-05-28 21:03:36 +0530
+date:   2021-05-28 09:03:36 +0530
 categories:
 ---
 ---
@@ -116,32 +116,103 @@ categories:
   logging.level:
    org.hibernate.SQL: debug # 로그로 남기기
   # org.hibernate.type: trace # 파라미터까지 볼 수 있는 옵션
-  ```
+  ```    
 
-  1. entity 패키지, Member.java 클래스 생성
+1. Entity 생성
 
-      <img data-action="zoom" src='{{ "/image/131.PNG" | relative_url }}' alt='absolute'>  
-      @GeneratedValue  
-      PK 자동 생성
+    <img data-action="zoom" src='{{ "/image/131.PNG" | relative_url }}' alt='absolute'>  
+    @GeneratedValue  
+    PK 자동 생성
 
-  2. repository 패키지, MemberJpaRepository.java 클래스 생성
+2. JPA Repository 생성
 
-      <img data-action="zoom" src='{{ "/image/132.PNG" | relative_url }}' alt='absolute'>  
-      @PersistenceContext  
-      스프링 컨테이너가 Entity Manager를 가져다줌
+    <img data-action="zoom" src='{{ "/image/132.PNG" | relative_url }}' alt='absolute'>  
+    @PersistenceContext  
+    스프링 컨테이너가 Entity Manager를 가져다줌
 
-  3. ctrl + shift + T 로 테스트
+3. 테스트 - JPA Repository
 
-      <img data-action="zoom" src='{{ "/image/133.PNG" | relative_url }}' alt='absolute'>    
+    *  ctrl + shift + T
 
-      <img data-action="zoom" src='{{ "/image/134.PNG" | relative_url }}' alt='absolute'>
+          <img data-action="zoom" src='{{ "/image/133.PNG" | relative_url }}' alt='absolute'>   
 
-      <img data-action="zoom" src='{{ "/image/135.PNG" | relative_url }}' alt='absolute'>  
-      기본 생성자 protected 사용 이유  
-      jpa가 프록시를 사용할 때 쓸 수 있도록 private -> protected 로 변경
+    *  생성자 추가
 
-      <img data-action="zoom" src='{{ "/image/136.PNG" | relative_url }}' alt='absolute'>  
-      ctrl + alt + v - 자동 변수 생성
+          <img data-action="zoom" src='{{ "/image/134.PNG" | relative_url }}' alt='absolute'>
 
-      <img data-action="zoom" src='{{ "/image/137.PNG" | relative_url }}' alt='absolute'>  
-      에러 발생
+          <img data-action="zoom" src='{{ "/image/135.PNG" | relative_url }}' alt='absolute'>  
+          기본 생성자 protected 사용 이유  
+          jpa가 프록시를 사용할 때 쓸 수 있도록 private -> protected 로 변경
+
+    *  실행 시 , 에러 발생
+
+          <img data-action="zoom" src='{{ "/image/137.PNG" | relative_url }}' alt='absolute'>  
+
+    *  @Transactional 어노테이션 추가하여 해결
+
+          <img data-action="zoom" src='{{ "/image/138.PNG" | relative_url }}' alt='absolute'>
+
+    * assertThat(findMember).isEqualTo(member); 테스트시 결과는?
+         - true  
+           한 트랜잭션 내에서는 영속성 컨텍스트 보장
+
+4. Spring Data Repository 생성
+
+    <img data-action="zoom" src='{{ "/image/139.PNG" | relative_url }}' alt='absolute'>  
+
+5. 테스트 - Spring Data Repository
+
+    *  실행 결과 ( save, findById 기본 내장 )
+
+          <img data-action="zoom" src='{{ "/image/140.PNG" | relative_url }}' alt='absolute'>  
+
+6. 쿼리 파라미터 로그 남기기
+
+    * build.gradle / dependencies 에  
+      implementation 'com.github.gavlyukovskiy:p6spy-spring-boot-starter:1.5.7' 추가  
+      운영에서는 성능저하로 인해 사용 고려
+
+        <img data-action="zoom" src='{{ "/image/141.PNG" | relative_url }}' alt='absolute'>
+
+## [2강] 예제 도메인 모델
+
+#### - **예제 도메인 모델과 동작확인**
+
+<img data-action="zoom" src='{{ "/image/142.PNG" | relative_url }}' alt='absolute'>
+
+1. Entity 생성
+
+      <img data-action="zoom" src='{{ "/image/143.PNG" | relative_url }}' alt='absolute'>  
+
+      <img data-action="zoom" src='{{ "/image/144.PNG" | relative_url }}' alt='absolute'>      
+
+
+      * Jpa 엔티티 기본생성자는  
+      @NoArgsConstructor(access = AccessLevel.PROTECTED) 로 대체 가능하다.
+
+      * Member Entity
+          1. changeTeam 함수 추가
+              ```c
+              public void changeTeam(Team team) {
+                  this.team = team;
+                  team.getMembers().add(this);
+              }
+              ```
+
+          2. 지연로딩으로 변경
+              ```c
+              @ManyToOne(fetch = FetchType.LAZY)
+              @JoinColumn(name = "team_id")
+              private Team team;
+              ```
+
+      * Team Entity
+          1. 생성자 추가
+              ```c
+              public Team(String name) {
+                  this.name = name;
+              }
+              ```         
+2. 테스트
+
+      <img data-action="zoom" src='{{ "/image/145.PNG" | relative_url }}' alt='absolute'>  
